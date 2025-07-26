@@ -20,9 +20,9 @@ To provision a secure, scalable, and observable MERN stack using Infrastructure 
 | DevOps      | Ansible, SSH, PM2              |
 | Deployment  | AWS EC2, S3, CloudFront        |
 | Secrets Mgmt| Ansible Vault                  |
-| Monitoring  | Prometheus, Grafana (required) |
+| Monitoring  | Prometheus, Grafana  
 
----
+--
 
 ## 🔧 Planned Architecture
 
