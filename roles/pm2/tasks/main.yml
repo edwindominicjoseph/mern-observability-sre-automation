@@ -1,0 +1,16 @@
+---
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+
+- name: Start backend app with PM2
+  command: pm2 start /var/www/app/Backend/index.js --name mern-backend
+  args:
+    chdir: /var/www/app/Backend/
+
+- name: Save PM2 process list
+  command: pm2 save
+
+- name: Enable PM2 startup on reboot
+  command: pm2 startup systemd

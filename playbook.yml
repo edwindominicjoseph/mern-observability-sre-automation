@@ -6,3 +6,5 @@
     - common
     - nodejs
     - backend
+    - frontend
+    - pm2

@@ -17,5 +17,5 @@
 - name: Install backend dependencies without prepare scripts
   command: npm install --omit=dev --ignore-scripts
   args:
-    chdir: /var/www/app
+    chdir: /var/www/app/Backend/
                   

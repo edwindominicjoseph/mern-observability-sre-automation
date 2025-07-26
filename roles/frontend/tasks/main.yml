@@ -1,0 +1,9 @@
+- name: Install frontend dependencies
+  npm:
+    path: /var/www/app/Frontend
+    production: no
+
+- name: Build React app
+  command: npm run build
+  args:
+    chdir: /var/www/app/Frontend
