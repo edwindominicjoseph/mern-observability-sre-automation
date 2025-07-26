@@ -1,0 +1,4 @@
+mern_repo: "https://github.com/edwindominicjoseph/mern_bookstore.git"
+branch: "main"  # optional, defaults to 'main'
+
+mongo_uri: "{{ vault_mongo_uri }}"

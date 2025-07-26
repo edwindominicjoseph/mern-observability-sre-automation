@@ -1,0 +1,23 @@
+---
+# roles/common/tasks/main.yml
+
+- name: Update apt packages
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+  become: true
+
+- name: Install base packages
+  apt:
+    name:
+      - git
+      - curl
+      - vim
+      - unzip
+    state: present
+  become: true
+

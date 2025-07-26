@@ -1,0 +1,8 @@
+---
+- name: Base setup for MERN server
+  hosts: mern
+  become: yes
+  roles:
+    - common
+    - nodejs
+    - backend

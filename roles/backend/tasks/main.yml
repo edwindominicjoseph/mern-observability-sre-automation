@@ -1,0 +1,21 @@
+---
+- name: Clone MERN monorepo
+  git:
+    repo: "{{ mern_repo }}"  
+    dest: /var/www/app          
+    version: "{{ branch | default('main') }}"  
+    force: yes
+
+- name: Copy .env to backend
+  template:
+    src: .env.j2
+    dest: /var/www/app/.env
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'                         
+
+- name: Install backend dependencies without prepare scripts
+  command: npm install --omit=dev --ignore-scripts
+  args:
+    chdir: /var/www/app
+                  

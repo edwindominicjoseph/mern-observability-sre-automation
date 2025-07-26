@@ -1,0 +1,22 @@
+
+# tasks/main.yml
+- name: Add NodeSource Node.js 18 repo
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+
+- name: Add Node.js repo
+  apt_repository:
+    repo: deb https://deb.nodesource.com/node_18.x {{ ansible_distribution_release | lower }} main
+    state: present
+
+- name: Install Node.js and npm
+  apt:
+    name: nodejs
+    state: present
+    update_cache: yes
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
