@@ -8,3 +8,4 @@
     - backend
     - frontend
     - pm2
+    - s3_deploy

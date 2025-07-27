@@ -1,0 +1,47 @@
+- name: Install AWS CLI
+  apt:
+    name: awscli
+    state: present
+  become: true
+
+- name: Ensure ~/.aws directory exists for ubuntu user
+  file:
+    path: /home/ubuntu/.aws
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0700'
+  become: true
+
+- name: Configure AWS credentials
+  copy:
+    dest: "/home/ubuntu/.aws/credentials"
+    content: |
+      [default]
+      aws_access_key_id={{ aws_access_key }}
+      aws_secret_access_key={{ aws_secret_key }}
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'
+  become: true
+
+
+- name: Sync React build to S3 bucket
+  command: >
+    aws s3 sync /var/www/app/Frontend/dist s3://{{ s3_bucket_name }}
+    --delete
+    --region {{ aws_region }}
+  become: true
+  environment:
+    AWS_SHARED_CREDENTIALS_FILE: /home/ubuntu/.aws/credentials
+
+
+- name: Invalidate CloudFront cache
+  command: >
+    aws cloudfront create-invalidation
+    --distribution-id {{ cloudfront_distribution_id }}
+    --paths "/*"
+  when: cloudfront_distribution_id is defined
+  become: true
+  environment:
+    AWS_SHARED_CREDENTIALS_FILE: /home/ubuntu/.aws/credentials

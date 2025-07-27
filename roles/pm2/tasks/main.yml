@@ -5,7 +5,7 @@
     global: yes
 
 - name: Start backend app with PM2
-  command: pm2 start /var/www/app/Backend/index.js --name mern-backend
+  command: pm2 start /var/www/app/Backend/index.js --name mern-backend -f
   args:
     chdir: /var/www/app/Backend/
 
