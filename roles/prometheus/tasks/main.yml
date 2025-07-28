@@ -1,0 +1,65 @@
+- name: Create Prometheus user and directories
+  user: name=prometheus shell=/sbin/nologin
+
+- name: Create config and data directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Download and extract Prometheus
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v2.52.0/prometheus-2.52.0.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Symlink binaries
+  file:
+    src: "/opt/prometheus-2.52.0.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    mode: 0755
+  loop:
+    - prometheus
+    - promtool
+
+- name: Create Prometheus config
+  copy:
+    dest: /etc/prometheus/prometheus.yml
+    content: |
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'nodejs-app'
+          static_configs:
+            - targets: ['localhost:5000']
+
+- name: Create systemd unit for Prometheus
+  copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      ExecStart=/usr/local/bin/prometheus \
+        --config.file=/etc/prometheus/prometheus.yml \
+        --storage.tsdb.path=/var/lib/prometheus
+      User=prometheus
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start Prometheus
+  systemd:
+    name: prometheus
+    enabled: yes
+    state: started

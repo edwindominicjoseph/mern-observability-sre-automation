@@ -9,3 +9,6 @@
     - frontend
     - pm2
     - s3_deploy
+    - prometheus
+    - grafana
+
