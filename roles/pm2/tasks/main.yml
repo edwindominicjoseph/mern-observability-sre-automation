@@ -1,16 +1,24 @@
----
-- name: Install PM2 globally
+- name: Install PM2 globally as ubuntu user
   npm:
     name: pm2
     global: yes
+  become: true
+  become_user: ubuntu
 
-- name: Start backend app with PM2
-  command: pm2 start /var/www/app/Backend/index.js --name mern-backend -f
+- name: Delete existing PM2 process named mern-backend if it exists
+  command: pm2 delete mern-backend
+  become: true
+  become_user: ubuntu
+  ignore_errors: yes
+
+- name: Start backend app with PM2 as ubuntu user
+  command: pm2 start /var/www/app/Backend/index.js --name mern-backend --update-env -f
   args:
     chdir: /var/www/app/Backend/
+  become: true
+  become_user: ubuntu
 
-- name: Save PM2 process list
+- name: Save PM2 process list as ubuntu user
   command: pm2 save
-
-- name: Enable PM2 startup on reboot
-  command: pm2 startup systemd
+  become: true
+  become_user: ubuntu

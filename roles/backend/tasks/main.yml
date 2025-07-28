@@ -9,7 +9,7 @@
 - name: Copy .env to backend
   template:
     src: .env.j2
-    dest: /var/www/app/.env
+    dest: /var/www/app/Backend/.env
     owner: ubuntu
     group: ubuntu
     mode: '0600'                         

@@ -18,6 +18,7 @@
       - curl
       - vim
       - unzip
+      - ufw
     state: present
   become: true
 
