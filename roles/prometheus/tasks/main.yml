@@ -34,10 +34,30 @@
     content: |
       global:
         scrape_interval: 15s
+      
+      rule_files:
+        - /etc/prometheus/alert_rules.yml
+
+      alerting:
+        alertmanagers:
+          - static_configs:
+              - targets: ['localhost:9093']
+
       scrape_configs:
         - job_name: 'nodejs-app'
           static_configs:
             - targets: ['localhost:5000']
+
+        - job_name: 'node_exporter'
+          static_configs:
+            - targets: ['localhost:9100']
+
+        - job_name: 'pm2_exporter'
+          static_configs:
+            - targets: ['localhost:9209']
+  notify: Restart prometheus
+
+
 
 - name: Create systemd unit for Prometheus
   copy:

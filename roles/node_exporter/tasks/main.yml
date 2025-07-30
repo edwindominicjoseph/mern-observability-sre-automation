@@ -1,0 +1,53 @@
+---
+- name: Ensure node_exporter user exists
+  user:
+    name: node_exporter
+    shell: /usr/sbin/nologin
+    system: yes
+
+- name: Create directory for extraction
+  file:
+    path: /opt/node_exporter
+    state: directory
+
+- name: Copy node_exporter archive to remote
+  copy:
+    src: "{{ node_exporter_archive }}"
+    dest: /opt/node_exporter/
+    mode: '0644'
+
+- name: Extract node_exporter archive
+  unarchive:
+    src: "/opt/node_exporter/{{ node_exporter_archive }}"
+    dest: /opt/node_exporter/
+    remote_src: yes
+
+- name: Copy node_exporter binary to /usr/local/bin
+  copy:
+    src: "/opt/node_exporter/{{ node_exporter_dir }}/node_exporter"
+    dest: /usr/local/bin/node_exporter
+    remote_src: yes
+    mode: '0755'
+
+- name: Create systemd unit for node_exporter
+  copy:
+    dest: /etc/systemd/system/node_exporter.service
+    content: |
+      [Unit]
+      Description=Prometheus Node Exporter
+      After=network.target
+
+      [Service]
+      User=node_exporter
+      ExecStart=/usr/local/bin/node_exporter
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart node_exporter
+
+- name: Reload systemd and start node_exporter
+  systemd:
+    daemon_reload: yes
+    name: node_exporter
+    enabled: yes
+    state: started

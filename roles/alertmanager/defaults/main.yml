@@ -1,0 +1,11 @@
+# Alerting thresholds
+api_availability_slo: 0.9999
+latency_threshold: 0.5
+error_rate_threshold: 0.001
+cpu_usage_threshold: 85
+memory_threshold: 0.15
+
+# Slack Integration
+slack_webhook_url: "https://hooks.slack.com/services/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"
+slack_channel: "#all-edwin"
+default_alert_receiver: "slack-notifications"

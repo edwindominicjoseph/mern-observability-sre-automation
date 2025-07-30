@@ -1,0 +1,37 @@
+- name: Install pm2-exporter globally as ubuntu user
+  npm:
+    name: pm2-exporter
+    global: yes
+  become: true
+  become_user: ubuntu
+
+- name: Check if pm2-exporter process exists
+  shell: pm2 describe pm2-exporter
+  become: true
+  become_user: ubuntu
+  register: pm2_exporter_status
+  ignore_errors: true
+
+- name: Delete existing pm2-exporter process if it exists
+  shell: pm2 delete pm2-exporter
+  become: true
+  become_user: ubuntu
+  when: pm2_exporter_status.rc == 0
+
+- name: Start pm2-exporter with PM2
+  shell: >
+    pm2 start /usr/lib/node_modules/pm2-exporter/exporter.js
+    --name pm2-exporter -- --port {{ pm2_exporter_port }}
+  become: true
+  become_user: ubuntu
+
+- name: Save PM2 process list
+  command: pm2 save
+  become: true
+  become_user: ubuntu
+
+
+- name: Save PM2 process list
+  command: pm2 save
+  become: true
+  become_user: ubuntu

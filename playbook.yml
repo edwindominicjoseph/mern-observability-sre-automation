@@ -9,6 +9,11 @@
     - frontend
     - pm2
     - s3_deploy
+    - node_exporter
+    - pm2_exporter
     - prometheus
     - grafana
+    - alertmanager
+
+
 

@@ -1,0 +1,89 @@
+- name: Create alertmanager user and directories
+  user:
+    name: alertmanager
+    shell: /sbin/nologin
+    state: present
+
+- name: Create config and storage directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: alertmanager
+    group: alertmanager
+    mode: 0755
+  loop:
+    - /etc/alertmanager
+    - /var/lib/alertmanager
+
+- name: Download and extract Alertmanager
+  unarchive:
+    src: https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Symlink alertmanager binaries
+  file:
+    src: "/opt/alertmanager-0.27.0.linux-amd64/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    mode: 0755
+  loop:
+    - alertmanager
+    - amtool
+
+- name: Deploy Alertmanager config
+  template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+    owner: alertmanager
+    group: alertmanager
+    mode: 0644
+  notify: Restart alertmanager
+
+- name: Create alert rules directory (for Prometheus)
+  file:
+    path: /etc/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: 0755
+
+- name: Deploy Prometheus alert rules
+  template:
+    src: alert_rules.yml.j2
+    dest: /etc/prometheus/alert_rules.yml
+    owner: prometheus
+    group: prometheus
+    mode: 0644
+  notify: Restart prometheus
+
+- name: Validate alert rules with promtool
+  command: promtool check rules /etc/prometheus/alert_rules.yml
+  register: promtool_result
+  changed_when: false
+  failed_when: promtool_result.rc != 0
+
+- name: Create Alertmanager systemd unit
+  copy:
+    dest: /etc/systemd/system/alertmanager.service
+    content: |
+      [Unit]
+      Description=Prometheus Alertmanager
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      ExecStart=/usr/local/bin/alertmanager \
+        --config.file=/etc/alertmanager/alertmanager.yml \
+        --storage.path=/var/lib/alertmanager
+      User=alertmanager
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start Alertmanager
+  systemd:
+    name: alertmanager
+    enabled: yes
+    state: started
