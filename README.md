@@ -1,196 +1,169 @@
-MERN SRE Automation 🚀
+# 🚀 MERN SRE Automation
 
-A production-grade, fully observable, and secure MERN stack deployment automated with Ansible on AWS EC2. This project integrates monitoring, alerting, SRE metrics (SLIs/SLOs), self-healing, and Slack notifications. Built with Production-grade reliability principles.
+A production-ready, fully observable, and secure MERN (MongoDB, Express, React, Node.js) stack deployment automated using **Ansible** on AWS EC2. This project integrates full-stack observability, real-time alerting, self-healing, and stress testing, designed with real-world **Site Reliability Engineering (SRE)** best practices.
 
-🌟 Objective
+---
 
-To deploy a reliable, secure, and scalable MERN (MongoDB, Express, React, Node.js) stack using Infrastructure as Code (IaC) and Site Reliability Engineering (SRE) practices.
+## 🎯 Objective
 
-✅ Tech Stack
+To build a reliable, secure, and self-healing infrastructure for a MERN application using:
+- Infrastructure as Code (IaC)
+- SLO-driven alerting
+- Monitoring, logging, and alert routing via Prometheus & Alertmanager
+- Slack integration for incident notification
+- Stress & burn rate testing
 
-Layer
+---
 
-Technology
+## 🧰 Tech Stack
 
-Frontend
+| Layer       | Technology / Tool                                |
+|-------------|---------------------------------------------------|
+| Frontend    | React (Vite) hosted on AWS S3 + CloudFront       |
+| Backend     | Node.js (Express API) managed by PM2             |
+| Database    | MongoDB Atlas                                     |
+| Process Mgmt| PM2 (with custom health checks)                  |
+| Automation  | Ansible (multi-role architecture)                |
+| Monitoring  | Prometheus, Node Exporter, PM2 Exporter          |
+| Dashboards  | Grafana                                          |
+| Alerting    | Alertmanager + Slack Webhook                     |
+| Security    | UFW, Fail2Ban, Let's Encrypt TLS via NGINX       |
+| Load Test   | stress, k6                                       |
 
-React (Vite), hosted on AWS S3 + CloudFront
+---
 
-Backend
+## 🧱 Architecture
 
-Node.js (Express API), managed with PM2
+```text
+Users ─▶ CloudFront (CDN) ─▶ S3 (React Frontend)
+            │
+            ▼
+     EC2 Instance (Express API + PM2 + Exporters)
+            │
+            ▼
+     MongoDB Atlas (Cloud-hosted)
+            │
+            ▼
+   Prometheus + Grafana + Alertmanager (Monitoring & Alerting)
+                                   │
+                                   ▼
+                            Slack Notifications
 
-Database
 
-MongoDB Atlas (Cloud-hosted)
 
-Infrastructure
 
-AWS EC2, Ansible, NGINX, Let's Encrypt TLS
+🔧 Features
+✅ Infrastructure as Code
+Modular Ansible roles for Prometheus, Alertmanager, Node Exporter, PM2 exporter, TLS setup
 
-Monitoring
+Auto-provisions EC2 instances, configures NGINX reverse proxy with HTTPS
 
-Prometheus, Grafana
+📈 Full Observability
+node_exporter, pm2-exporter, and custom /metrics for app-level visibility
 
-Alerting
+Prometheus scrapes and stores time-series metrics
 
-Prometheus Alertmanager + Slack
+Grafana dashboards include:
 
-Exporters
+CPU, memory, disk
 
-node_exporter, pm2-exporter, custom metrics
+API latency and error rate
 
-Security
+MongoDB availability (optional)
 
-UFW, Fail2Ban, SSH hardening
+SLO burn rate
 
-Resilience
+🔔 Real-Time Alerting (Prometheus → Alertmanager → Slack)
+Alerts defined using PromQL
 
-Cron watchdog, self-healing PM2 restarts
+Slack webhook integration
 
-Testing
+Sample rules:
 
-stress, k6 (load testing)
+High CPU/memory
 
-📊 Architecture Overview
+5xx error rate > 1%
 
-Users ➔ CloudFront ➔ S3 (Static React App)
-         └───➔ EC2 Instance (Node.js + PM2 + Exporters)
-                        └───➔ MongoDB Atlas (Cloud)
-                        └───➔ Prometheus ➔ Alertmanager ➔ Slack
+Availability < 99.9%
 
-🚧 Core Features
+Latency > 500ms
 
-🔧 Infrastructure as Code
+⚠️ Sample Alert Payload
+yaml
+Copy
+Edit
+🔔 *HighCPUUsage*
+🖥 Instance: ip-172-31-x-x
+⚠ Severity: warning
+📝 CPU usage exceeds 85%
+🔁 Self-Healing
+PM2 restart on crash
 
-Modular Ansible roles: prometheus, alertmanager, nodejs-app
+Health-check watchdog (via cronjob)
 
-Automates provisioning, config, TLS, and monitoring setup
+Recovery auto-triggered if unresponsive
 
-📊 Full Observability
+🔐 Security Hardening
+UFW firewall: only essential ports open
 
-Prometheus scrapes:
+Fail2Ban: brute-force protection
 
-node_exporter for system
+Let's Encrypt SSL on NGINX
 
-pm2-exporter for app
+Key-based SSH only (no passwords)
 
-Custom Express /metrics
+🧪 Load Testing & Validation
+stress: simulate CPU/memory pressure
 
-Grafana dashboards:
+k6: simulate concurrent API traffic
 
-CPU & memory
+curl to test Alertmanager API with manual alerts
 
-Request latency & errors
+📄 Alerting Rules Summary
+Alert Name	Trigger Condition
+HighCPUUsage	CPU > 85% for 2 mins
+HighMemoryUsage	Free mem < 15% for 2 mins
+HighErrorRate	5xx errors > 1%
+HighLatency95th	95th percentile > 500ms
+APIAvailabilityBelowSLO	Success rate < 99.9%
 
-MongoDB health
+📘 Runbooks & Postmortems
+runbook.md: Operational response steps per alert type
 
-Burn rate & SLO compliance
+postmortem-template.md: Root Cause Analysis (RCA) documentation format
 
-📢 Alerting
+✅ How to Use
+Step 1: Clone & Configure
+bash
+Copy
+Edit
+git clone https://github.com/your-username/mern-sre-automation.git
+cd mern-sre-automation
+Step 2: Set your variables in group_vars/all.yml
+yaml
+Copy
+Edit
+slack_webhook_url: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
+slack_channel: "#all-edwin"
+Step 3: Run Ansible
+bash
+Copy
+Edit
+ansible-playbook -i inventory playbook.yml
+Step 4: Validate in Browser
+Prometheus: http://<ec2-ip>:9090
 
-Slack Integration via Alertmanager
+Alertmanager: http://<ec2-ip>:9093
 
-Alerts for: high CPU, low memory, 5xx spike, high latency, low availability
+Grafana (optional): http://<ec2-ip>:3000
 
-Templated Slack messages with alert name, severity, description
+Slack: Check configured channel for alerts
 
-Manual alert trigger support for testing
+📦 Coming Soon
+Terraform version
 
-🔄 Self-Healing & Resilience
+Grafana-as-code provisioning
 
-PM2 process management with restart policies
+Loki + EFK stack for logging
 
-Cron-based watchdog: restarts Node.js if health fails
-
-Hardened instance with UFW, Fail2Ban, SSH key-only access
-
-🔢 SLIs and SLOs
-
-SLI
-
-SLO Target
-
-API Availability
-
-≥ 99.9%
-
-CPU Usage
-
-< 85% avg
-
-Memory Availability
-
-> 15%
-
-5xx Error Rate
-
-< 1%
-
-95th Percentile Latency
-
-< 500ms
-
-Prometheus rules enforce these
-
-Grafana shows error budget burn
-
-🔍 Load & Stress Testing
-
-stress used to simulate CPU & RAM load
-
-k6 used for throughput and latency benchmarks
-
-📚 Runbooks & Postmortems
-
-runbook.md: how to respond to alerts
-
-postmortem-template.md: RCA documentation
-
-🛠️ Validation Commands
-
-Check
-
-Command
-
-Prometheus targets
-
-curl localhost:9090/targets
-
-Alert rules loaded
-
-`curl localhost:9090/api/v1/rules
-
-jq`
-
-Alert firing
-
-`curl localhost:9090/api/v1/alerts
-
-jq`
-
-Send test alert
-
-curl -XPOST http://localhost:9093/api/v2/alerts ...
-
-Slack webhook test
-
-curl -X POST -H 'Content-Type: application/json' ...
-
-📈 Future Enhancements
-
-Grafana Alerting (in addition to Prometheus)
-
-Uptime probe monitoring
-
-Slack silencing/resume via buttons
-
-Multi-channel routing (pager, devops, etc)
-
-Alert deduplication and inhibition tuning
-
-🚀 Outcome
-
-A real-world SRE-grade MERN stack deployment on AWS, built with resilience, observability, and automation at its core. Suitable for fintech, healthcare, or enterprise use cases.
-
-Let me know if you want this exported as a GitHub README.md, rendered PDF, or included in your portfolio site.
+PagerDuty integration
