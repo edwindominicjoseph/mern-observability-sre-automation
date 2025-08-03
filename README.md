@@ -8,7 +8,7 @@ A production-grade, fully observable, and secure MERN (MongoDB, Express, React, 
 
 To build a **reliable, scalable, and secure** infrastructure for a MERN application using:
 
-- Infrastructure as Code (Ansible)
+- Configuration as Code (Ansible)
 - HTTPS routing via ACM & Let's Encrypt
 - SLO-driven alerting via Prometheus + Slack
 - Continuous monitoring and recovery
