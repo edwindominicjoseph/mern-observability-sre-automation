@@ -24,7 +24,7 @@ To build a **reliable, scalable, and secure** infrastructure for a MERN applicat
 | Backend     | Node.js (Express API) behind NGINX (TLS)         |
 | Domain Mgmt | Route 53 (DNS for custom domains)                |
 | TLS Certs   | ACM (Frontend) & Let's Encrypt (Backend)         |
-| Database    | MongoDB Atlas (Fully managed DB)                 |
+| Database    | MongoDB Atlas (cloud)                 |
 | Process Mgmt| PM2 (with self-healing restarts)                 |
 | Monitoring  | Prometheus, Node Exporter, PM2 Exporter          |
 | Dashboards  | Grafana                                          |
