@@ -1,17 +1,18 @@
 # 🚀 MERN SRE Automation
 
-A production-ready, fully observable, and secure MERN (MongoDB, Express, React, Node.js) stack deployment automated using **Ansible** on AWS EC2. This project integrates full-stack observability, real-time alerting, self-healing, and stress testing, designed with real-world **Site Reliability Engineering (SRE)** best practices.
+A production-grade, fully observable, and secure MERN (MongoDB, Express, React, Node.js) stack deployment automated using **Ansible** on AWS EC2. Designed with real-world **Site Reliability Engineering (SRE)** best practices, this system includes monitoring, TLS, alerting, and self-healing.
 
 ---
 
 ## 🎯 Objective
 
-To build a reliable, secure, and self-healing infrastructure for a MERN application using:
-- Infrastructure as Code (IaC)
-- SLO-driven alerting
-- Monitoring, logging, and alert routing via Prometheus & Alertmanager
-- Slack integration for incident notification
-- Stress & burn rate testing
+To build a **reliable, scalable, and secure** infrastructure for a MERN application using:
+
+- Infrastructure as Code (Ansible)
+- HTTPS routing via ACM & Let's Encrypt
+- SLO-driven alerting via Prometheus + Slack
+- Continuous monitoring and recovery
+- Load and burn-rate testing
 
 ---
 
@@ -19,15 +20,16 @@ To build a reliable, secure, and self-healing infrastructure for a MERN applicat
 
 | Layer       | Technology / Tool                                |
 |-------------|---------------------------------------------------|
-| Frontend    | React (Vite) hosted on AWS S3 + CloudFront       |
-| Backend     | Node.js (Express API) managed by PM2             |
-| Database    | MongoDB Atlas                                     |
-| Process Mgmt| PM2 (with custom health checks)                  |
-| Automation  | Ansible (multi-role architecture)                |
+| Frontend    | React (Vite) hosted on AWS S3 + CloudFront + ACM |
+| Backend     | Node.js (Express API) behind NGINX (TLS)         |
+| Domain Mgmt | Route 53 (DNS for custom domains)                |
+| TLS Certs   | ACM (Frontend) & Let's Encrypt (Backend)         |
+| Database    | MongoDB Atlas (Fully managed DB)                 |
+| Process Mgmt| PM2 (with self-healing restarts)                 |
 | Monitoring  | Prometheus, Node Exporter, PM2 Exporter          |
 | Dashboards  | Grafana                                          |
 | Alerting    | Alertmanager + Slack Webhook                     |
-| Security    | UFW, Fail2Ban, Let's Encrypt TLS via NGINX       |
+| Security    | UFW, Fail2Ban, SSH hardening, TLS everywhere     |
 | Load Test   | stress, k6                                       |
 
 ---
@@ -35,60 +37,78 @@ To build a reliable, secure, and self-healing infrastructure for a MERN applicat
 ## 🧱 Architecture
 
 ```text
-Users ─▶ CloudFront (CDN) ─▶ S3 (React Frontend)
-            │
-            ▼
-     EC2 Instance (Express API + PM2 + Exporters)
-            │
-            ▼
-     MongoDB Atlas (Cloud-hosted)
-            │
-            ▼
-   Prometheus + Grafana + Alertmanager (Monitoring & Alerting)
-                                   │
-                                   ▼
-                            Slack Notifications
+Users ─▶ Route 53 ─▶ CloudFront (TLS via ACM) ─▶ S3 (React App)
+                              │
+                              ▼
+                 HTTPS via NGINX + Let's Encrypt TLS
+                              │
+                 EC2 Instance (API + Exporters + PM2)
+                              │
+                              ▼
+                      MongoDB Atlas (Managed DB)
+                              │
+                              ▼
+    Prometheus + Alertmanager + Grafana (Monitoring Stack)
+                              │
+                              ▼
+                        Slack (Incident Alerts)
 
 
 
 
-🔧 Features
-✅ Infrastructure as Code
-Modular Ansible roles for Prometheus, Alertmanager, Node Exporter, PM2 exporter, TLS setup
 
-Auto-provisions EC2 instances, configures NGINX reverse proxy with HTTPS
+---
 
-📈 Full Observability
-node_exporter, pm2-exporter, and custom /metrics for app-level visibility
+🔐 Security Highlights
+✅ Frontend (S3 + CloudFront + ACM)
+HTTPS via ACM TLS (auto-renewed)
 
-Prometheus scrapes and stores time-series metrics
+CloudFront OAC prevents direct bucket access
 
-Grafana dashboards include:
+Route 53 manages domain routing
 
-CPU, memory, disk
+S3 bucket policies allow access only via CloudFront
 
-API latency and error rate
+✅ Backend (EC2 + NGINX + Let's Encrypt)
+NGINX with auto-renewed Let's Encrypt TLS
 
-MongoDB availability (optional)
+Enforced HTTPS & reverse proxy
 
-SLO burn rate
+CORS-restricted origins in Express app
 
-🔔 Real-Time Alerting (Prometheus → Alertmanager → Slack)
-Alerts defined using PromQL
+PM2 crash recovery
 
-Slack webhook integration
+Fail2Ban for SSH brute-force protection
 
-Sample rules:
+UFW firewall (only ports 22, 443 open)
 
-High CPU/memory
+📈 Observability
+Metrics Sources
+node_exporter: EC2 health (CPU, memory, disk)
 
-5xx error rate > 1%
+pm2-exporter: Process-level status
 
-Availability < 99.9%
+/metrics endpoint: App-level custom metrics
 
-Latency > 500ms
+Grafana Dashboards
+CPU/Memory/Disk usage
 
-⚠️ Sample Alert Payload
+Request durations & status codes
+
+MongoDB connectivity
+
+SLO error budget burn rate
+
+🔔 Alerting (Prometheus → Alertmanager → Slack)
+Prometheus Alert Rules
+Alert Name	Condition
+HighCPUUsage	CPU > 85% for 2 mins
+HighMemoryUsage	Free memory < 15%
+HighErrorRate	HTTP 5xx > 1%
+HighLatency95th	95th percentile > 500ms
+APIAvailabilityBelowSLO	Success rate < 99.9%
+
+Slack Message Example
 yaml
 Copy
 Edit
@@ -97,73 +117,55 @@ Edit
 ⚠ Severity: warning
 📝 CPU usage exceeds 85%
 🔁 Self-Healing
-PM2 restart on crash
+PM2 restart-on-failure
 
-Health-check watchdog (via cronjob)
+Health-check watchdog (cronjob)
 
-Recovery auto-triggered if unresponsive
+Auto TLS renewal (Certbot)
 
-🔐 Security Hardening
-UFW firewall: only essential ports open
+Alert-based manual/automated mitigation
 
-Fail2Ban: brute-force protection
+🧪 Load Testing
+stress: CPU, memory stress tests
 
-Let's Encrypt SSL on NGINX
+k6: Simulate concurrent API load
 
-Key-based SSH only (no passwords)
+curl: Trigger manual alerts for testing
 
-🧪 Load Testing & Validation
-stress: simulate CPU/memory pressure
+📘 Operational Docs
+File	Purpose
+runbook.md	Steps to handle each alert
+postmortem-template.md	Root Cause Analysis format
+group_vars/all.yml	Configuration for domains, Slack, TLS
 
-k6: simulate concurrent API traffic
-
-curl to test Alertmanager API with manual alerts
-
-📄 Alerting Rules Summary
-Alert Name	Trigger Condition
-HighCPUUsage	CPU > 85% for 2 mins
-HighMemoryUsage	Free mem < 15% for 2 mins
-HighErrorRate	5xx errors > 1%
-HighLatency95th	95th percentile > 500ms
-APIAvailabilityBelowSLO	Success rate < 99.9%
-
-📘 Runbooks & Postmortems
-runbook.md: Operational response steps per alert type
-
-postmortem-template.md: Root Cause Analysis (RCA) documentation format
-
-✅ How to Use
-Step 1: Clone & Configure
+✅ How to Deploy
+Step 1: Clone Repo
 bash
 Copy
 Edit
 git clone https://github.com/your-username/mern-sre-automation.git
 cd mern-sre-automation
-Step 2: Set your variables in group_vars/all.yml
+Step 2: Configure Variables
+Edit group_vars/all.yml
+
 yaml
 Copy
 Edit
-slack_webhook_url: "https://hooks.slack.com/services/XXX/YYY/ZZZ"
-slack_channel: "#all-edwin"
+domain_name: api.yourdomain.com
+frontend_domain: mern.yourdomain.com
+acm_certificate_arn: arn:aws:acm:us-east-1:XXXX
+slack_webhook_url: https://hooks.slack.com/services/XXX/YYY/ZZZ
 Step 3: Run Ansible
 bash
 Copy
 Edit
 ansible-playbook -i inventory playbook.yml
-Step 4: Validate in Browser
-Prometheus: http://<ec2-ip>:9090
+Step 4: Access Services
+Service	URL
+Frontend	https://mern.yourdomain.com
+Backend API	https://api.yourdomain.com/api/...
+Prometheus	http://<ec2-ip>:9090
+Alertmanager	http://<ec2-ip>:9093
+Grafana	http://<ec2-ip>:3000
+Slack Alerts	Sent to configured channel
 
-Alertmanager: http://<ec2-ip>:9093
-
-Grafana (optional): http://<ec2-ip>:3000
-
-Slack: Check configured channel for alerts
-
-📦 Coming Soon
-Terraform version
-
-Grafana-as-code provisioning
-
-Loki + EFK stack for logging
-
-PagerDuty integration
