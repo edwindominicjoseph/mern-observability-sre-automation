@@ -109,9 +109,6 @@ HighLatency95th	95th percentile > 500ms
 APIAvailabilityBelowSLO	Success rate < 99.9%
 
 Slack Message Example
-yaml
-Copy
-Edit
 🔔 *HighCPUUsage*
 🖥 Instance: ip-172-31-x-x
 ⚠ Severity: warning
@@ -148,17 +145,12 @@ cd mern-sre-automation
 Step 2: Configure Variables
 Edit group_vars/all.yml
 
-yaml
-Copy
-Edit
 domain_name: api.yourdomain.com
 frontend_domain: mern.yourdomain.com
 acm_certificate_arn: arn:aws:acm:us-east-1:XXXX
 slack_webhook_url: https://hooks.slack.com/services/XXX/YYY/ZZZ
 Step 3: Run Ansible
-bash
-Copy
-Edit
+
 ansible-playbook -i inventory playbook.yml
 Step 4: Access Services
 Service	URL
