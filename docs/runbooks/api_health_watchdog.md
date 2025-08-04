@@ -57,51 +57,51 @@ Resolution Steps
  Fix the cron execution context
 Update your Ansible role or manual cron configuration to ensure the script runs as ubuntu, not root.
 
-Option 1: Root crontab with user switch
+# Option 1: Root crontab with user switch
 sudo crontab -e
 # Add or modify:
 */2 * * * * su - ubuntu -c '/usr/local/bin/healthwatchdog.sh >> /var/log/watchdog.log 2>&1'
 
 
-Option 2: User-specific cron
+# Option 2: User-specific cron
 sudo su - ubuntu
 crontab -e
 # Add:
 */2 * * * * /usr/local/bin/healthwatchdog.sh >> /home/ubuntu/watchdog.log 2>&1
 
 
-Validation Steps
+# Validation Steps
 
-Stop backend manually:
+# Stop backend manually:
 sudo su - ubuntu -c "pm2 stop mern-backend"
 
 
-Wait 2 minutes → check logs:
+# Wait 2 minutes → check logs:
 sudo tail -n 20 /var/log/watchdog.log
 
 
-Confirm PM2 restarted it:
+# Confirm PM2 restarted it:
 sudo su - ubuntu -c "pm2 status"
 
 
-Confirm API endpoint is healthy:
+# Confirm API endpoint is healthy:
 curl https://api.edwindominicjoseph.store/api/books
 🔄 Rollback Plan
 If the cron job breaks:
 
-Disable it temporarily:
+# Disable it temporarily:
 sudo crontab -e  # or su to ubuntu and run crontab -e
 
 
-Restart backend manually:
+# Restart backend manually:
 sudo su - ubuntu -c "pm2 restart mern-backend"
 
-Notes
+# Notes
 PM2 maintains isolated process trees per user.
 
 root cannot control ubuntu’s PM2 processes unless explicitly switched via su.
 
 Silent failures are common when commands run in the wrong environment.
 
-Linked Incident
+# Linked Incident
 Postmortem: postmortem_api_downtime_2025-08-04.md
