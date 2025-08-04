@@ -11,9 +11,12 @@ route:
 receivers:
   - name: 'slack-notifications'
     slack_configs:
-      - api_url: "https://hooks.slack.com/services/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"
+      - api_url: '{{ slack_webhook_url }}'
         channel: '#all-edwin'
-        text: "🔔 Test alert from Alertmanager (no template)"
+        text: "Alert !!!"
+
+
+
 
 
 inhibit_rules:

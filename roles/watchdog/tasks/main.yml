@@ -1,0 +1,12 @@
+- name: Deploy watchdog script
+  template:
+    src: healthwatchdog.sh.j2
+    dest: "{{ watchdog_script_path }}"
+    mode: '0755'
+
+- name: Add watchdog to crontab
+  cron:
+    name: "PM2 Watchdog Health Check"
+    user: ubuntu
+    job: "{{ watchdog_script_path }}"
+    minute: "*/2"

@@ -1,7 +1,7 @@
-- name: Install pm2-exporter globally as ubuntu user
-  npm:
-    name: pm2-exporter
-    global: yes
+- name: Install pm2-exporter locally under ubuntu user
+  shell: npm install pm2-exporter
+  args:
+    chdir: /home/ubuntu/
   become: true
   become_user: ubuntu
 
@@ -20,7 +20,7 @@
 
 - name: Start pm2-exporter with PM2
   shell: >
-    pm2 start /usr/lib/node_modules/pm2-exporter/exporter.js
+    pm2 start /home/ubuntu/node_modules/pm2-exporter/exporter.js
     --name pm2-exporter -- --port {{ pm2_exporter_port }}
   become: true
   become_user: ubuntu
