@@ -1,14 +1,17 @@
-- name: Install NGINX
+- name: Install NGINX and Certbot
   apt:
-    name: nginx
-    state: present
+    name:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
     update_cache: yes
+    state: present
 
-- name: Copy NGINX config
+- name: Copy HTTP-only config for initial Certbot validation
   template:
-    src: nginx.conf.j2
+    src: nginx_http.conf.j2
     dest: /etc/nginx/sites-available/{{ domain_name }}
-    mode: 0644
+  notify: Reload nginx
 
 - name: Enable NGINX site
   file:
@@ -17,34 +20,36 @@
     state: link
     force: yes
 
-- name: Remove default site (optional)
+- name: Remove default NGINX site
   file:
     path: /etc/nginx/sites-enabled/default
     state: absent
+
+- name: Reload NGINX to activate HTTP config
+  service:
+    name: nginx
+    state: restarted
+
+- name: Issue TLS certificate with Certbot
+  command: >
+    certbot certonly --nginx --non-interactive --agree-tos
+    --email {{ email }} -d {{ domain_name }}
+  args:
+    creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
+
+- name: Copy final HTTPS config with redirect
+  template:
+    src: nginx_https_redirect.conf.j2
+    dest: /etc/nginx/sites-available/{{ domain_name }}
+  notify: Reload nginx
 
 - name: Test NGINX config
   command: nginx -t
   register: nginx_test
   changed_when: false
 
-- name: Reload NGINX
+- name: Reload NGINX to apply HTTPS config
   service:
     name: nginx
     state: restarted
   when: nginx_test.rc == 0
-
-- name: Install Certbot
-  apt:
-    name:
-      - certbot
-      - python3-certbot-nginx
-    state: present
-    update_cache: yes
-
-- name: Obtain TLS certificate from Let's Encrypt
-  command: >
-    certbot --nginx -n --agree-tos --redirect
-    --email edj3650@gmail.com
-    -d {{ domain_name }}
-  args:
-    creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem

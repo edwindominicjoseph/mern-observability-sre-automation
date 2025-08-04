@@ -1,12 +1,19 @@
-- name: Deploy watchdog script
+- name: Create watchdog script
   template:
     src: healthwatchdog.sh.j2
     dest: "{{ watchdog_script_path }}"
     mode: '0755'
+    owner: ubuntu
+    group: ubuntu
+    
 
-- name: Add watchdog to crontab
+- name: Ensure cron job exists to run watchdog
   cron:
-    name: "PM2 Watchdog Health Check"
-    user: ubuntu
+    name: "API health watchdog"
     job: "{{ watchdog_script_path }}"
-    minute: "*/2"
+    minute: "{{ watchdog_cron_timing.split()[0] }}"
+    hour: "{{ watchdog_cron_timing.split()[1] }}"
+    day: "{{ watchdog_cron_timing.split()[2] }}"
+    month: "{{ watchdog_cron_timing.split()[3] }}"
+    weekday: "{{ watchdog_cron_timing.split()[4] }}"
+    user: ubuntu

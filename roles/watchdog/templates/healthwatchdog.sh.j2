@@ -1,0 +1,11 @@
+#!/bin/bash
+
+URL="{{ watchdog_health_url }}"
+LOG="{{ watchdog_log_path }}"
+TIMESTAMP=$(date)
+
+# Check API health
+if ! curl --silent --fail "$URL" | grep -q "{{ watchdog_expected_keyword }}"; then
+    echo "$TIMESTAMP: API unhealthy. Restarting PM2..." >> "$LOG"
+    pm2 restart {{ watchdog_pm2_process }}
+fi
